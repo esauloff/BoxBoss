@@ -10,11 +10,14 @@ import android.widget.EditText;
 
 import com.esauloff.boxboss.R;
 import com.esauloff.boxboss.model.Item;
+import com.esauloff.boxboss.storage.ItemDatabase;
 
 public class ItemEditorActivity extends Activity {
     private EditText nameEdit = null;
     private EditText commentEdit = null;
     private Button saveButton = null;
+
+    private ItemDatabase itemDatabase = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +41,13 @@ public class ItemEditorActivity extends Activity {
             }
         });
         saveButton.setEnabled(false);
+
+        itemDatabase = ItemDatabase.getInstance(this);
     }
 
     public void save(View view) {
         Item item = new Item(nameEdit.getText().toString(), commentEdit.getText().toString());
+        itemDatabase.itemDao().insertAll(item);
     }
 
     public void cancel(View view) {
