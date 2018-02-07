@@ -8,6 +8,7 @@ import android.view.View;
 import com.esauloff.boxboss.R;
 
 public class ItemActivity extends Activity {
+    private static final int ITEM_EDITOR_ACTIVITY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,9 +16,16 @@ public class ItemActivity extends Activity {
         setContentView(R.layout.activity_item);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == ITEM_EDITOR_ACTIVITY && resultCode == RESULT_OK) {
+
+        }
+    }
+
     public void openItemEditor(View view) {
         Intent intent = new Intent(this, ItemEditorActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
     }
 }
 

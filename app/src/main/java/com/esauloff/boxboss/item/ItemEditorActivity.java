@@ -1,6 +1,7 @@
 package com.esauloff.boxboss.item;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -46,8 +47,17 @@ public class ItemEditorActivity extends Activity {
     }
 
     public void save(View view) {
-        Item item = new Item(nameEdit.getText().toString(), commentEdit.getText().toString());
-        itemDatabase.itemDao().insertAll(item);
+        final Item item = new Item(nameEdit.getText().toString(), commentEdit.getText().toString());
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                itemDatabase.itemDao().insertAll(item);
+            }
+        });
+
+        setResult(RESULT_OK);
+        finish();
     }
 
     public void cancel(View view) {

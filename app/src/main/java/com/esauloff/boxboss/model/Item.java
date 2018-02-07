@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Entity
 public class Item {
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     private int id;
     @ColumnInfo(name = "name")
     private String name = null;
