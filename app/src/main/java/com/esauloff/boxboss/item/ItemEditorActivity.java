@@ -14,11 +14,11 @@ import com.esauloff.boxboss.model.Item;
 import com.esauloff.boxboss.storage.ItemDatabase;
 
 public class ItemEditorActivity extends Activity {
-    private EditText nameEdit = null;
-    private EditText commentEdit = null;
-    private Button saveButton = null;
+    private EditText nameEdit;
+    private EditText commentEdit;
+    private Button saveButton;
 
-    private ItemDatabase itemDatabase = null;
+    private ItemDatabase itemDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
