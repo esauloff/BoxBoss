@@ -11,15 +11,18 @@ public class Item {
     @PrimaryKey(autoGenerate = true)
     private int id;
     @ColumnInfo(name = "name")
-    private String name = null;
+    private String name;
     @ColumnInfo(name = "comment")
-    private String comment = null;
+    private String comment;
+    @ColumnInfo(name = "color")
+    private int color;
 //    private Date creationDate = null;
 //    private Date lastModifiedDate = null;
 
-    public Item(String name, String comment) {
+    public Item(String name, String comment, int color) {
         this.name = name;
         this.comment = comment;
+        this.color = color;
 
 //        creationDate = new Date();
 //        lastModifiedDate = creationDate;
@@ -50,6 +53,15 @@ public class Item {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    /* color */
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 
 //    /* creationDate */

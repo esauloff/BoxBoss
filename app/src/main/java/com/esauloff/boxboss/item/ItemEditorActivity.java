@@ -26,11 +26,26 @@ public class ItemEditorActivity extends Activity {
     private Button pickColorButton;
     private Button saveButton;
 
+    private TextWatcher nameEditWatcher = new TextWatcher() {
+        @Override
+        public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+            saveButton.setEnabled(charSequence != null && charSequence.length() != 0);
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
+
+        @Override
+        public void afterTextChanged(Editable editable) { }
+    };
+
+    private int itemColor;
     private AlertDialog colorPickerDialog;
-    private ColorPickerClickListener colorPickerClickListener = new ColorPickerClickListener() {
+    private ColorPickerClickListener colorPickerListener = new ColorPickerClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-            pickColorButton.setBackgroundColor(selectedColor);
+            itemColor = selectedColor;
+            pickColorButton.setBackgroundColor(itemColor);
         }
     };
 
@@ -46,23 +61,12 @@ public class ItemEditorActivity extends Activity {
         pickColorButton = findViewById(R.id.btn_pickColor);
         saveButton = findViewById(R.id.btn_save);
 
-        nameEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
-
-            @Override
-            public void afterTextChanged(Editable editable) { }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-                saveButton.setEnabled(charSequence != null && charSequence.length() != 0);
-            }
-        });
+        nameEdit.addTextChangedListener(nameEditWatcher);
         saveButton.setEnabled(false);
 
         colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").initialColor(0).density(5)
                 .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-                .setPositiveButton("OK", colorPickerClickListener)
+                .setPositiveButton("OK", colorPickerListener)
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) { }
@@ -81,7 +85,7 @@ public class ItemEditorActivity extends Activity {
     }
 
     public void save(View view) {
-        final Item item = new Item(nameEdit.getText().toString(), commentEdit.getText().toString());
+        final Item item = new Item(nameEdit.getText().toString(), commentEdit.getText().toString(), itemColor);
 
         AsyncTask.execute(new Runnable() {
             @Override

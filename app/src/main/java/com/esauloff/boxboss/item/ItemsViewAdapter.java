@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.esauloff.boxboss.R;
@@ -14,12 +15,14 @@ import java.util.List;
 public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public RelativeLayout relativeLayout;
         public TextView textView;
 
         public ViewHolder(View view) {
             super(view);
 
-            this.textView = (TextView)view.findViewById(R.id.name);
+            this.relativeLayout = view.findViewById(R.id.item);
+            this.textView = view.findViewById(R.id.name);
         }
     } /* class ViewHolder */
 
@@ -39,6 +42,7 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        holder.relativeLayout.setBackgroundColor(items.get(position).getColor());
         holder.textView.setText(items.get(position).getName());
     }
 
