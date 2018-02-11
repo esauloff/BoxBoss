@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.esauloff.boxboss.R;
-import com.esauloff.boxboss.item.ItemActivity;
+import com.esauloff.boxboss.item.ItemsActivity;
 
 public class MainActivity extends Activity {
 
@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
     }
 
     public void openItems(View view) {
-        Intent intent = new Intent(this, ItemActivity.class);
+        Intent intent = new Intent(this, ItemsActivity.class);
         startActivity(intent);
     }
 }

@@ -15,7 +15,7 @@ import com.esauloff.boxboss.storage.ItemDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ItemActivity extends Activity {
+public class ItemsActivity extends Activity {
     private static final int ITEM_EDITOR_ACTIVITY = 1;
 
     private RecyclerView itemsView;
@@ -29,7 +29,7 @@ public class ItemActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_item);
+        setContentView(R.layout.activity_items);
 
         itemsView = findViewById(R.id.rview_items);
         itemsView.setHasFixedSize(true);
