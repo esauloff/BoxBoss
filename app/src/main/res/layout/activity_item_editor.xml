@@ -36,6 +36,17 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_name" />
 
     <Button
+        android:id="@+id/btn_pickColor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="64dp"
+        android:onClick="pickColor"
+        android:text="Pick Color"
+        app:layout_constraintBottom_toTopOf="@+id/btn_save"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
         android:id="@+id/btn_save"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

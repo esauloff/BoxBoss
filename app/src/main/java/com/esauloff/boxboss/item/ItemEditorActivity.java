@@ -1,8 +1,11 @@
 package com.esauloff.boxboss.item;
 
 import android.app.Activity;
+
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -12,11 +15,24 @@ import android.widget.EditText;
 import com.esauloff.boxboss.R;
 import com.esauloff.boxboss.model.Item;
 import com.esauloff.boxboss.storage.ItemDatabase;
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.OnColorSelectedListener;
+import com.flask.colorpicker.builder.ColorPickerClickListener;
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 public class ItemEditorActivity extends Activity {
     private EditText nameEdit;
     private EditText commentEdit;
+    private Button pickColorButton;
     private Button saveButton;
+
+    private AlertDialog colorPickerDialog;
+    private ColorPickerClickListener colorPickerClickListener = new ColorPickerClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+            pickColorButton.setBackgroundColor(selectedColor);
+        }
+    };
 
     private ItemDatabase itemDatabase;
 
@@ -27,6 +43,7 @@ public class ItemEditorActivity extends Activity {
 
         nameEdit = findViewById(R.id.edit_name);
         commentEdit = findViewById(R.id.edit_comment);
+        pickColorButton = findViewById(R.id.btn_pickColor);
         saveButton = findViewById(R.id.btn_save);
 
         nameEdit.addTextChangedListener(new TextWatcher() {
@@ -43,7 +60,24 @@ public class ItemEditorActivity extends Activity {
         });
         saveButton.setEnabled(false);
 
+        colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").initialColor(0).density(5)
+                .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
+                .setPositiveButton("OK", colorPickerClickListener)
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) { }
+                })
+                .setOnColorSelectedListener(new OnColorSelectedListener() {
+                    @Override
+                    public void onColorSelected(int selectedColor) { }
+                })
+                .build();
+
         itemDatabase = ItemDatabase.getInstance(this);
+    }
+
+    public void pickColor(View view) {
+        colorPickerDialog.show();
     }
 
     public void save(View view) {
