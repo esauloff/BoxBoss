@@ -4,10 +4,11 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-public class Item {
+public class Item implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private int id;
     @ColumnInfo(name = "name")

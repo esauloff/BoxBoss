@@ -14,6 +14,10 @@ import java.util.List;
 
 public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.ViewHolder> {
 
+    public interface OnItemClickListener {
+        void onItemClick(Item item);
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public RelativeLayout relativeLayout;
         public TextView textView;
@@ -24,12 +28,26 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
             this.relativeLayout = view.findViewById(R.id.item);
             this.textView = view.findViewById(R.id.name);
         }
-    } /* class ViewHolder */
 
-    private List<Item> items;
+        public void bind(final Item item, final OnItemClickListener listener) {
+            relativeLayout.setBackgroundColor(item.getColor());
+            textView.setText(item.getName());
 
-    public ItemsViewAdapter(List<Item> items) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onItemClick(item);
+                }
+            });
+        }
+    }
+
+    private final List<Item> items;
+    private final OnItemClickListener listener;
+
+    public ItemsViewAdapter(List<Item> items, OnItemClickListener listener) {
         this.items = items;
+        this.listener = listener;
     }
 
     @Override
@@ -42,8 +60,7 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.relativeLayout.setBackgroundColor(items.get(position).getColor());
-        holder.textView.setText(items.get(position).getName());
+        holder.bind(items.get(position), listener);
     }
 
     @Override

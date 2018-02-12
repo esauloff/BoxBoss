@@ -11,6 +11,7 @@ import android.view.View;
 import com.esauloff.boxboss.R;
 import com.esauloff.boxboss.model.Item;
 import com.esauloff.boxboss.storage.ItemDatabase;
+import com.esauloff.boxboss.item.ItemsViewAdapter.OnItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +21,19 @@ public class ItemsActivity extends Activity {
 
     private RecyclerView itemsView;
     private RecyclerView.Adapter itemsViewAdapter;
-    private RecyclerView.LayoutManager itemsViewLayoutManager;
 
-    private ItemDatabase itemDatabase;
+    private OnItemClickListener listener = new OnItemClickListener() {
+        @Override
+        public void onItemClick(Item item) {
+            Intent intent = new Intent(ItemsActivity.this, ItemEditorActivity.class);
+            intent.putExtra("item", item);
+            startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
+        }
+    };
 
     private List<Item> items = new ArrayList<Item>();
+
+    private ItemDatabase itemDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +43,10 @@ public class ItemsActivity extends Activity {
         itemsView = findViewById(R.id.rview_items);
         itemsView.setHasFixedSize(true);
 
-        itemsViewLayoutManager = new LinearLayoutManager(this);
-        itemsView.setLayoutManager(itemsViewLayoutManager);
-
-        itemsViewAdapter = new ItemsViewAdapter(items);
+        itemsViewAdapter = new ItemsViewAdapter(items, listener);
         itemsView.setAdapter(itemsViewAdapter);
+
+        itemsView.setLayoutManager(new LinearLayoutManager(this));
 
         itemDatabase = ItemDatabase.getInstance(this);
 

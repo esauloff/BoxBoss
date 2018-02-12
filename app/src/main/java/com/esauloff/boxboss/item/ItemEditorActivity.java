@@ -20,6 +20,8 @@ import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
+import java.io.Serializable;
+
 public class ItemEditorActivity extends Activity {
     private EditText nameEdit;
     private EditText commentEdit;
@@ -64,7 +66,17 @@ public class ItemEditorActivity extends Activity {
         nameEdit.addTextChangedListener(nameEditWatcher);
         saveButton.setEnabled(false);
 
-        colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").initialColor(0).density(5)
+        Serializable extra = getIntent().getSerializableExtra("item");
+        if(extra instanceof Item) {
+            Item item = (Item)extra;
+
+            nameEdit.setText(item.getName());
+            commentEdit.setText(item.getComment());
+            itemColor = item.getColor();
+            pickColorButton.setBackgroundColor(itemColor);
+        }
+
+        colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").initialColor(itemColor).density(5)
                 .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
                 .setPositiveButton("OK", colorPickerListener)
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
