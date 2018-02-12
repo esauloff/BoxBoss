@@ -1,7 +1,6 @@
 package com.esauloff.boxboss.item;
 
 import android.app.Activity;
-
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,28 +27,8 @@ public class ItemEditorActivity extends Activity {
     private Button pickColorButton;
     private Button saveButton;
 
-    private TextWatcher nameEditWatcher = new TextWatcher() {
-        @Override
-        public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-            saveButton.setEnabled(charSequence != null && charSequence.length() != 0);
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
-
-        @Override
-        public void afterTextChanged(Editable editable) { }
-    };
-
     private int itemColor;
     private AlertDialog colorPickerDialog;
-    private ColorPickerClickListener colorPickerListener = new ColorPickerClickListener() {
-        @Override
-        public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-            itemColor = selectedColor;
-            pickColorButton.setBackgroundColor(itemColor);
-        }
-    };
 
     private ItemDatabase itemDatabase;
 
@@ -63,7 +42,18 @@ public class ItemEditorActivity extends Activity {
         pickColorButton = findViewById(R.id.btn_pickColor);
         saveButton = findViewById(R.id.btn_save);
 
-        nameEdit.addTextChangedListener(nameEditWatcher);
+        nameEdit.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                saveButton.setEnabled(charSequence != null && charSequence.length() != 0);
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) { }
+
+            @Override
+            public void afterTextChanged(Editable editable) { }
+        });
         saveButton.setEnabled(false);
 
         Serializable extra = getIntent().getSerializableExtra("item");
@@ -76,9 +66,16 @@ public class ItemEditorActivity extends Activity {
             pickColorButton.setBackgroundColor(itemColor);
         }
 
-        colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").initialColor(itemColor).density(5)
+        colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").density(5)
+                .initialColor(itemColor)
                 .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-                .setPositiveButton("OK", colorPickerListener)
+                .setPositiveButton("OK", new ColorPickerClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                        itemColor = selectedColor;
+                        pickColorButton.setBackgroundColor(itemColor);
+                    }
+                })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) { }
@@ -86,8 +83,7 @@ public class ItemEditorActivity extends Activity {
                 .setOnColorSelectedListener(new OnColorSelectedListener() {
                     @Override
                     public void onColorSelected(int selectedColor) { }
-                })
-                .build();
+                }).build();
 
         itemDatabase = ItemDatabase.getInstance(this);
     }

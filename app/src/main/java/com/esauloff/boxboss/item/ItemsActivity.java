@@ -6,12 +6,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.support.v7.widget.helper.ItemTouchHelper.SimpleCallback;
 import android.view.View;
+import android.widget.Toast;
 
 import com.esauloff.boxboss.R;
+import com.esauloff.boxboss.item.ItemsViewAdapter.OnItemClickListener;
 import com.esauloff.boxboss.model.Item;
 import com.esauloff.boxboss.storage.ItemDatabase;
-import com.esauloff.boxboss.item.ItemsViewAdapter.OnItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +24,6 @@ public class ItemsActivity extends Activity {
 
     private RecyclerView itemsView;
     private RecyclerView.Adapter itemsViewAdapter;
-
-    private OnItemClickListener listener = new OnItemClickListener() {
-        @Override
-        public void onItemClick(Item item) {
-            Intent intent = new Intent(ItemsActivity.this, ItemEditorActivity.class);
-            intent.putExtra("item", item);
-            startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
-        }
-    };
 
     private List<Item> items = new ArrayList<Item>();
 
@@ -42,11 +36,29 @@ public class ItemsActivity extends Activity {
 
         itemsView = findViewById(R.id.rview_items);
         itemsView.setHasFixedSize(true);
+        itemsView.setLayoutManager(new LinearLayoutManager(this));
 
-        itemsViewAdapter = new ItemsViewAdapter(items, listener);
+        itemsViewAdapter = new ItemsViewAdapter(items, new OnItemClickListener() {
+            @Override
+            public void onItemClick(Item item) {
+                Intent intent = new Intent(ItemsActivity.this, ItemEditorActivity.class);
+                intent.putExtra("item", item);
+                startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
+            }
+        });
         itemsView.setAdapter(itemsViewAdapter);
 
-        itemsView.setLayoutManager(new LinearLayoutManager(this));
+        new ItemTouchHelper(new SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                Toast.makeText(getApplicationContext(), "Left swipe", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+        }).attachToRecyclerView(itemsView);
 
         itemDatabase = ItemDatabase.getInstance(this);
 
