@@ -7,18 +7,25 @@ import android.arch.persistence.room.PrimaryKey;
 import java.io.Serializable;
 import java.util.Date;
 
-@Entity
+@Entity(tableName = "Items")
 public class Item implements Serializable {
     @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
     private int id;
+
     @ColumnInfo(name = "name")
     private String name;
+
     @ColumnInfo(name = "comment")
     private String comment;
+
     @ColumnInfo(name = "color")
     private int color;
+
 //    private Date creationDate = null;
 //    private Date lastModifiedDate = null;
+
+    public Item() { }
 
     public Item(String name, String comment, int color) {
         this.name = name;

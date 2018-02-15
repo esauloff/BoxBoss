@@ -65,7 +65,7 @@ public class ItemsActivity extends Activity {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                items.addAll(itemDatabase.itemDao().getAll());
+                items.addAll(itemDatabase.itemDao().getItems());
             }
         });
 
@@ -78,7 +78,7 @@ public class ItemsActivity extends Activity {
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
-                    items.addAll(itemDatabase.itemDao().getAll());
+                    items.addAll(itemDatabase.itemDao().getItems());
                 }
             });
         }

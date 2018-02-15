@@ -1,20 +1,25 @@
 package com.esauloff.boxboss.model;
 
 import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import java.util.List;
 
 @Dao
 public interface ItemDao {
-    @Query("SELECT * FROM item")
-    List<Item> getAll();
-
-//    @Query("SELECT * FROM item WHERE")
-//    Item getItemById();
+    @Query("SELECT * FROM Items")
+    List<Item> getItems();
 
     @Insert
-    void insertAll(Item... items);
+    long insert(Item item);
+
+    @Update
+    int update(Item item);
+
+    @Delete
+    void delete(Item item);
 }
 

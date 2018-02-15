@@ -2,6 +2,7 @@ package com.esauloff.boxboss.item;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +21,11 @@ import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 import java.io.Serializable;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ItemEditorActivity extends Activity {
     private EditText nameEdit;
@@ -29,6 +35,10 @@ public class ItemEditorActivity extends Activity {
 
     private int itemColor;
     private AlertDialog colorPickerDialog;
+
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private Item item;
 
     private ItemDatabase itemDatabase;
 
@@ -58,12 +68,15 @@ public class ItemEditorActivity extends Activity {
 
         Serializable extra = getIntent().getSerializableExtra("item");
         if(extra instanceof Item) {
-            Item item = (Item)extra;
+            item = (Item)extra;
 
             nameEdit.setText(item.getName());
             commentEdit.setText(item.getComment());
             itemColor = item.getColor();
             pickColorButton.setBackgroundColor(itemColor);
+        }
+        else {
+            item = new Item();
         }
 
         colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").density(5)
@@ -93,16 +106,50 @@ public class ItemEditorActivity extends Activity {
     }
 
     public void save(View view) {
-        final Item item = new Item(nameEdit.getText().toString(), commentEdit.getText().toString(), itemColor);
+        item.setName(nameEdit.getText().toString());
+        item.setComment(commentEdit.getText().toString());
+        item.setColor(itemColor);
 
-        AsyncTask.execute(new Runnable() {
+        Future<Integer> future = executor.submit(new Callable<Integer>() {
+
             @Override
-            public void run() {
-                itemDatabase.itemDao().insertAll(item);
+            public Integer call() throws Exception {
+                int id = 0;
+
+                if(item.getId() != 0) {
+                    if(itemDatabase.itemDao().update(item) == 1) {
+                        id = item.getId();
+                    }
+                    else {
+                        throw new Exception("An error occurred while updating item in database");
+                    }
+                }
+                else {
+                    id = (int)itemDatabase.itemDao().insert(item);
+                    if(id == -1) {
+                        throw new Exception("An error occurred while inserting item into database");
+                    }
+                }
+
+                return id;
             }
         });
 
-        setResult(RESULT_OK);
+        int id = 0;
+        try {
+            id = future.get();
+        }
+        catch(ExecutionException | InterruptedException exc) {
+            exc.printStackTrace();
+        }
+        catch(Exception exc) {
+            exc.printStackTrace();
+        }
+
+        Intent intent = new Intent();
+        intent.putExtra("itemdId", id);
+
+        setResult(RESULT_OK, intent);
         finish();
     }
 
