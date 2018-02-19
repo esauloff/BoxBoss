@@ -18,15 +18,25 @@ import com.esauloff.boxboss.storage.ItemDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ItemsActivity extends Activity {
     private static final int ITEM_EDITOR_ACTIVITY = 1;
+    private static final String ITEM_EXTRA = "item";
+    private static final String ITEM_ID_EXTRA = "itemId";
 
     private RecyclerView itemsView;
     private RecyclerView.Adapter itemsViewAdapter;
 
-    private List<Item> items = new ArrayList<Item>();
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    private List<Item> items = new ArrayList<Item>();
     private ItemDatabase itemDatabase;
 
     @Override
@@ -42,7 +52,7 @@ public class ItemsActivity extends Activity {
             @Override
             public void onItemClick(Item item) {
                 Intent intent = new Intent(ItemsActivity.this, ItemEditorActivity.class);
-                intent.putExtra("item", item);
+                intent.putExtra(ITEM_EXTRA, item);
                 startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
             }
         });
@@ -62,33 +72,43 @@ public class ItemsActivity extends Activity {
 
         itemDatabase = ItemDatabase.getInstance(this);
 
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                items.addAll(itemDatabase.itemDao().getItems());
-            }
-        });
-
-        itemsViewAdapter.notifyDataSetChanged();
+        updateView();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == ITEM_EDITOR_ACTIVITY && resultCode == RESULT_OK) {
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    items.addAll(itemDatabase.itemDao().getItems());
-                }
-            });
-        }
+            int id = (int)data.getSerializableExtra(ITEM_ID_EXTRA);
 
-        itemsViewAdapter.notifyDataSetChanged();
+            updateView();
+        }
     }
 
     public void openItemEditor(View view) {
         Intent intent = new Intent(this, ItemEditorActivity.class);
         startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
+    }
+
+    private void updateView() {
+        Future<List<Item> > future = executor.submit(new Callable<List<Item> >() {
+            @Override
+            public List<Item> call() throws Exception {
+                return itemDatabase.itemDao().getItems();
+            }
+        });
+
+        try {
+            items.removeAll(items);
+            items.addAll(future.get(5, TimeUnit.SECONDS));
+        }
+        catch(TimeoutException | ExecutionException | InterruptedException exc) {
+            future.cancel(true);
+
+            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT);
+            exc.printStackTrace();
+        }
+
+        itemsViewAdapter.notifyDataSetChanged();
     }
 }
 

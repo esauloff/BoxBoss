@@ -3,7 +3,6 @@ package com.esauloff.boxboss.item;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -11,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.esauloff.boxboss.R;
 import com.esauloff.boxboss.model.Item;
@@ -26,8 +26,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ItemEditorActivity extends Activity {
+    private static final String ITEM_EXTRA = "item";
+    private static final String ITEM_ID_EXTRA = "itemId";
+
     private EditText nameEdit;
     private EditText commentEdit;
     private Button pickColorButton;
@@ -39,7 +44,6 @@ public class ItemEditorActivity extends Activity {
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private Item item;
-
     private ItemDatabase itemDatabase;
 
     @Override
@@ -66,7 +70,7 @@ public class ItemEditorActivity extends Activity {
         });
         saveButton.setEnabled(false);
 
-        Serializable extra = getIntent().getSerializableExtra("item");
+        Serializable extra = getIntent().getSerializableExtra(ITEM_EXTRA);
         if(extra instanceof Item) {
             item = (Item)extra;
 
@@ -111,7 +115,6 @@ public class ItemEditorActivity extends Activity {
         item.setColor(itemColor);
 
         Future<Integer> future = executor.submit(new Callable<Integer>() {
-
             @Override
             public Integer call() throws Exception {
                 int id = 0;
@@ -137,17 +140,17 @@ public class ItemEditorActivity extends Activity {
 
         int id = 0;
         try {
-            id = future.get();
+            id = future.get(5, TimeUnit.SECONDS);
         }
-        catch(ExecutionException | InterruptedException exc) {
-            exc.printStackTrace();
-        }
-        catch(Exception exc) {
+        catch(TimeoutException | ExecutionException | InterruptedException exc) {
+            future.cancel(true);
+
+            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT);
             exc.printStackTrace();
         }
 
         Intent intent = new Intent();
-        intent.putExtra("itemdId", id);
+        intent.putExtra(ITEM_ID_EXTRA, id);
 
         setResult(RESULT_OK, intent);
         finish();
