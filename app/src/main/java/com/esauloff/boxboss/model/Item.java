@@ -3,6 +3,9 @@ package com.esauloff.boxboss.model;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverters;
+
+import com.esauloff.boxboss.model.converters.DateConverter;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -22,18 +25,26 @@ public class Item implements Serializable {
     @ColumnInfo(name = "color")
     private int color;
 
-//    private Date creationDate = null;
-//    private Date lastModifiedDate = null;
+    @TypeConverters(DateConverter.class)
+    @ColumnInfo(name = "createdDate")
+    private Date createdDate;
 
-    public Item() { }
+    @TypeConverters(DateConverter.class)
+    @ColumnInfo(name = "lastModifiedDate")
+    private Date lastModifiedDate;
+
+    public Item() {
+        createdDate = new Date();
+        lastModifiedDate = createdDate;
+    }
 
     public Item(String name, String comment, int color) {
         this.name = name;
         this.comment = comment;
         this.color = color;
 
-//        creationDate = new Date();
-//        lastModifiedDate = creationDate;
+        createdDate = new Date();
+        lastModifiedDate = createdDate;
     }
 
     /* id */
@@ -72,22 +83,22 @@ public class Item implements Serializable {
         this.color = color;
     }
 
-//    /* creationDate */
-//    public Date getCreationDate() {
-//        return creationDate;
-//    }
-//
-//    private void setCreationDate(Date creationDate) {
-//        this.creationDate = creationDate;
-//    }
+    /* createdDate */
+    public Date getCreatedDate() {
+        return createdDate;
+    }
 
-//    /* lastModifiedDate */
-//    public Date getLastModifiedDate() {
-//        return lastModifiedDate;
-//    }
-//
-//    public void setLastModifiedDate(Date lastModifiedDate) {
-//        this.lastModifiedDate = lastModifiedDate;
-//    }
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    /* lastModifiedDate */
+    public Date getLastModifiedDate() {
+        return lastModifiedDate;
+    }
+
+    public void setLastModifiedDate(Date lastModifiedDate) {
+        this.lastModifiedDate = lastModifiedDate;
+    }
 }
 

@@ -20,18 +20,21 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public RelativeLayout relativeLayout;
-        public TextView textView;
+        public TextView nameLabel;
+        public TextView createdDateLabel;
 
         public ViewHolder(View view) {
             super(view);
 
             this.relativeLayout = view.findViewById(R.id.item);
-            this.textView = view.findViewById(R.id.name);
+            this.nameLabel = view.findViewById(R.id.lbl_name);
+            this.createdDateLabel = view.findViewById(R.id.lbl_createdDate);
         }
 
         public void bind(final Item item, final OnItemClickListener listener) {
             relativeLayout.setBackgroundColor(item.getColor());
-            textView.setText(item.getName());
+            nameLabel.setText(item.getName());
+            createdDateLabel.setText(item.getCreatedDate().toString());
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

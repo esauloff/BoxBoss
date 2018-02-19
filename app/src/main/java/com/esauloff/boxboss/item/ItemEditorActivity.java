@@ -21,6 +21,7 @@ import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -120,6 +121,7 @@ public class ItemEditorActivity extends Activity {
                 int id = 0;
 
                 if(item.getId() != 0) {
+                    item.setLastModifiedDate(new Date());
                     if(itemDatabase.itemDao().update(item) == 1) {
                         id = item.getId();
                     }

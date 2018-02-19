@@ -8,12 +8,31 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/lbl_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:text="TextView" />
+
+    <TextView
+        android:id="@+id/lbl_added"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/lbl_createdDate"
+        android:layout_alignBottom="@+id/lbl_createdDate"
+        android:layout_alignParentStart="true"
+        android:text="Added:"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/lbl_createdDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/lbl_name"
+        android:layout_toEndOf="@+id/lbl_added"
         android:text="TextView" />
 
 </RelativeLayout>
