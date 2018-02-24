@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/itemEditor"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.esauloff.boxboss.item.ItemEditorActivity">
@@ -35,6 +36,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_name" />
 
+    <ImageView
+        android:id="@+id/view_picture"
+        android:layout_width="252dp"
+        android:layout_height="144dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:src="@android:drawable/screen_background_light_transparent"
+        app:layout_constraintBottom_toTopOf="@+id/btn_pickColor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edit_comment" />
+
     <Button
         android:id="@+id/btn_pickColor"
         android:layout_width="wrap_content"
@@ -45,6 +60,17 @@
         android:text="Pick Color"
         app:layout_constraintBottom_toTopOf="@+id/btn_save"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/btn_takePicture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="64dp"
+        android:onClick="takePicture"
+        android:text="Take Picture"
+        app:layout_constraintBottom_toTopOf="@+id/btn_cancel"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/btn_save"

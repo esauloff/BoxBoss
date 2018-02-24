@@ -1,15 +1,26 @@
 package com.esauloff.boxboss.item;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.esauloff.boxboss.R;
@@ -20,7 +31,10 @@ import com.flask.colorpicker.OnColorSelectedListener;
 import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -31,21 +45,30 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ItemEditorActivity extends Activity {
+    private static final int TAKE_PICTURE = 1;
+    private static final int CAMERA_PERMISSION_REQUEST = 2;
+
     private static final String ITEM_EXTRA = "item";
     private static final String ITEM_ID_EXTRA = "itemId";
 
     private EditText nameEdit;
     private EditText commentEdit;
+    private ImageView pictureView;
     private Button pickColorButton;
+    private Button takePictureButton;
     private Button saveButton;
+
+    private String picturePath;
 
     private int itemColor;
     private AlertDialog colorPickerDialog;
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private Item item;
     private ItemDatabase itemDatabase;
+    private Item item;
+
+    /* callbacks */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +77,9 @@ public class ItemEditorActivity extends Activity {
 
         nameEdit = findViewById(R.id.edit_name);
         commentEdit = findViewById(R.id.edit_comment);
+        pictureView = findViewById(R.id.view_picture);
         pickColorButton = findViewById(R.id.btn_pickColor);
+        takePictureButton = findViewById(R.id.btn_takePicture);
         saveButton = findViewById(R.id.btn_save);
 
         nameEdit.addTextChangedListener(new TextWatcher() {
@@ -106,8 +131,43 @@ public class ItemEditorActivity extends Activity {
         itemDatabase = ItemDatabase.getInstance(this);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == TAKE_PICTURE && resultCode == RESULT_OK) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            pictureView.setImageBitmap(BitmapFactory.decodeFile(picturePath, options));
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(requestCode == CAMERA_PERMISSION_REQUEST) {
+            if(grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCaptureIntent();
+            }
+            else {
+                Toast.makeText(this, "Camera permission was not granted", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /* actions */
+
     public void pickColor(View view) {
         colorPickerDialog.show();
+    }
+
+    public void takePicture(View view) {
+        int hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if(hasCameraPermission != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
+        }
+        else {
+            startCaptureIntent();
+        }
     }
 
     public void save(View view) {
@@ -144,10 +204,10 @@ public class ItemEditorActivity extends Activity {
         try {
             id = future.get(5, TimeUnit.SECONDS);
         }
-        catch(TimeoutException | ExecutionException | InterruptedException exc) {
+        catch(ExecutionException | InterruptedException | TimeoutException exc) {
             future.cancel(true);
 
-            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT);
+            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
             exc.printStackTrace();
         }
 
@@ -160,6 +220,42 @@ public class ItemEditorActivity extends Activity {
 
     public void cancel(View view) {
         finish();
+    }
+
+    /* private */
+
+    private void startCaptureIntent() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(intent.resolveActivity(getPackageManager()) != null) {
+            File picture = null;
+
+            try {
+                picture = createPictureFile();
+            }
+            catch(IOException ex) {
+                Toast.makeText(this, "Error occurred while creating picture file", Toast.LENGTH_SHORT).show();
+            }
+
+            if(picture != null) {
+                Uri photoURI = FileProvider.getUriForFile(this, "com.esauloff.boxboss.fileprovider", picture);
+
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+
+                startActivityForResult(intent, TAKE_PICTURE);
+            }
+        }
+    }
+
+    private File createPictureFile() throws IOException {
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File picture = new File(storageDir.getPath() + File.separator + timestamp + ".jpg");
+
+        picturePath = picture.getAbsolutePath();
+
+        return picture;
     }
 }
 

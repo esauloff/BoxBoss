@@ -25,6 +25,9 @@ public class Item implements Serializable {
     @ColumnInfo(name = "color")
     private int color;
 
+//    @ColumnInfo(name = "picture")
+//    private int picture;
+
     @TypeConverters(DateConverter.class)
     @ColumnInfo(name = "createdDate")
     private Date createdDate;
