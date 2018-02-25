@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -102,6 +103,7 @@ public class ItemEditorActivity extends Activity {
 
             nameEdit.setText(item.getName());
             commentEdit.setText(item.getComment());
+            pictureView.setImageBitmap(item.getPictureBitmap());
             itemColor = item.getColor();
             pickColorButton.setBackgroundColor(itemColor);
         }
@@ -136,6 +138,7 @@ public class ItemEditorActivity extends Activity {
         if(requestCode == TAKE_PICTURE && resultCode == RESULT_OK) {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//            pictureView.setImageResource(android.R.color.transparent);
             pictureView.setImageBitmap(BitmapFactory.decodeFile(picturePath, options));
         }
     }
@@ -174,6 +177,7 @@ public class ItemEditorActivity extends Activity {
         item.setName(nameEdit.getText().toString());
         item.setComment(commentEdit.getText().toString());
         item.setColor(itemColor);
+        item.setPictureBitmap( ((BitmapDrawable)pictureView.getDrawable()).getBitmap() );
 
         Future<Integer> future = executor.submit(new Callable<Integer>() {
             @Override

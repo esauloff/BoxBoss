@@ -4,7 +4,9 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
+import android.graphics.Bitmap;
 
+import com.esauloff.boxboss.model.converters.BitmapConverter;
 import com.esauloff.boxboss.model.converters.DateConverter;
 
 import java.io.Serializable;
@@ -25,8 +27,10 @@ public class Item implements Serializable {
     @ColumnInfo(name = "color")
     private int color;
 
-//    @ColumnInfo(name = "picture")
-//    private int picture;
+    @TypeConverters(BitmapConverter.class)
+//    @ColumnInfo(name = "picture", typeAffinity = ColumnInfo.BLOB)
+    private BitmapSerializable picture;
+//    private Bitmap picture;
 
     @TypeConverters(DateConverter.class)
     @ColumnInfo(name = "createdDate")
@@ -84,6 +88,23 @@ public class Item implements Serializable {
 
     public void setColor(int color) {
         this.color = color;
+    }
+
+    /* picture */
+    public BitmapSerializable getPicture() {
+        return picture;
+    }
+
+    public void setPicture(BitmapSerializable picture) {
+        this.picture = picture;
+    }
+
+    public Bitmap getPictureBitmap() {
+        return picture.toBitmap();
+    }
+
+    public void setPictureBitmap(Bitmap picture) {
+        this.picture = new BitmapSerializable(picture);
     }
 
     /* createdDate */
