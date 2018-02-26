@@ -37,7 +37,7 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_name" />
 
     <ImageView
-        android:id="@+id/view_picture"
+        android:id="@+id/view_image"
         android:layout_width="252dp"
         android:layout_height="144dp"
         android:layout_marginBottom="24dp"
@@ -51,25 +51,25 @@
         app:layout_constraintTop_toBottomOf="@+id/edit_comment" />
 
     <Button
-        android:id="@+id/btn_pickColor"
+        android:id="@+id/btn_takeImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:layout_marginStart="64dp"
-        android:onClick="pickColor"
-        android:text="Pick Color"
-        app:layout_constraintBottom_toTopOf="@+id/btn_save"
+        android:onClick="takeImage"
+        android:text="Take Image"
+        app:layout_constraintBottom_toTopOf="@+id/btn_cancel"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/btn_takePicture"
+        android:id="@+id/btn_pickColor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="64dp"
-        android:onClick="takePicture"
-        android:text="Take Picture"
-        app:layout_constraintBottom_toTopOf="@+id/btn_cancel"
+        android:onClick="pickColor"
+        android:text="Pick Color"
+        app:layout_constraintBottom_toTopOf="@+id/btn_save"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button

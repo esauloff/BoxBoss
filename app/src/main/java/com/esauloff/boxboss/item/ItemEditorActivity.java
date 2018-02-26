@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -54,14 +53,15 @@ public class ItemEditorActivity extends Activity {
 
     private EditText nameEdit;
     private EditText commentEdit;
-    private ImageView pictureView;
+    private ImageView imageView;
+    private Button takeImageButton;
     private Button pickColorButton;
-    private Button takePictureButton;
     private Button saveButton;
 
-    private String picturePath;
+    private String imagePath;
+    private int color;
 
-    private int itemColor;
+    private BitmapFactory.Options options = new BitmapFactory.Options();
     private AlertDialog colorPickerDialog;
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -78,9 +78,9 @@ public class ItemEditorActivity extends Activity {
 
         nameEdit = findViewById(R.id.edit_name);
         commentEdit = findViewById(R.id.edit_comment);
-        pictureView = findViewById(R.id.view_picture);
+        imageView = findViewById(R.id.view_image);
+        takeImageButton = findViewById(R.id.btn_takeImage);
         pickColorButton = findViewById(R.id.btn_pickColor);
-        takePictureButton = findViewById(R.id.btn_takePicture);
         saveButton = findViewById(R.id.btn_save);
 
         nameEdit.addTextChangedListener(new TextWatcher() {
@@ -95,7 +95,14 @@ public class ItemEditorActivity extends Activity {
             @Override
             public void afterTextChanged(Editable editable) { }
         });
+
+        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            takeImageButton.setEnabled(false);
+        }
+
         saveButton.setEnabled(false);
+
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
         Serializable extra = getIntent().getSerializableExtra(ITEM_EXTRA);
         if(extra instanceof Item) {
@@ -103,22 +110,25 @@ public class ItemEditorActivity extends Activity {
 
             nameEdit.setText(item.getName());
             commentEdit.setText(item.getComment());
-            pictureView.setImageBitmap(item.getPictureBitmap());
-            itemColor = item.getColor();
-            pickColorButton.setBackgroundColor(itemColor);
+
+            imagePath = item.getImagePath();
+            imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath, options));
+
+            color = item.getColor();
+            pickColorButton.setBackgroundColor(color);
         }
         else {
             item = new Item();
         }
 
         colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").density(5)
-                .initialColor(itemColor)
+                .initialColor(color)
                 .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
                 .setPositiveButton("OK", new ColorPickerClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                        itemColor = selectedColor;
-                        pickColorButton.setBackgroundColor(itemColor);
+                        color = selectedColor;
+                        pickColorButton.setBackgroundColor(color);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -136,10 +146,7 @@ public class ItemEditorActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == TAKE_PICTURE && resultCode == RESULT_OK) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-//            pictureView.setImageResource(android.R.color.transparent);
-            pictureView.setImageBitmap(BitmapFactory.decodeFile(picturePath, options));
+            imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath, options));
         }
     }
 
@@ -149,7 +156,7 @@ public class ItemEditorActivity extends Activity {
 
         if(requestCode == CAMERA_PERMISSION_REQUEST) {
             if(grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startCaptureIntent();
+                startImageCapture();
             }
             else {
                 Toast.makeText(this, "Camera permission was not granted", Toast.LENGTH_SHORT).show();
@@ -163,21 +170,21 @@ public class ItemEditorActivity extends Activity {
         colorPickerDialog.show();
     }
 
-    public void takePicture(View view) {
+    public void takeImage(View view) {
         int hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if(hasCameraPermission != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
         }
         else {
-            startCaptureIntent();
+            startImageCapture();
         }
     }
 
     public void save(View view) {
         item.setName(nameEdit.getText().toString());
         item.setComment(commentEdit.getText().toString());
-        item.setColor(itemColor);
-        item.setPictureBitmap( ((BitmapDrawable)pictureView.getDrawable()).getBitmap() );
+        item.setImagePath(imagePath);
+        item.setColor(color);
 
         Future<Integer> future = executor.submit(new Callable<Integer>() {
             @Override
@@ -219,6 +226,7 @@ public class ItemEditorActivity extends Activity {
         intent.putExtra(ITEM_ID_EXTRA, id);
 
         setResult(RESULT_OK, intent);
+
         finish();
     }
 
@@ -228,38 +236,43 @@ public class ItemEditorActivity extends Activity {
 
     /* private */
 
-    private void startCaptureIntent() {
+    private void startImageCapture() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if(intent.resolveActivity(getPackageManager()) != null) {
-            File picture = null;
+            File image = null;
 
             try {
-                picture = createPictureFile();
+                if(imagePath != null) {
+                    File previousImage = new File(imagePath);
+                    if(previousImage.exists()) {
+                        previousImage.delete();
+                    }
+                }
+
+                image = createImageFile();
             }
             catch(IOException ex) {
-                Toast.makeText(this, "Error occurred while creating picture file", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Error occurred while creating image file", Toast.LENGTH_SHORT).show();
             }
 
-            if(picture != null) {
-                Uri photoURI = FileProvider.getUriForFile(this, "com.esauloff.boxboss.fileprovider", picture);
+            if(image != null) {
+                Uri photoURI = FileProvider.getUriForFile(this, "com.esauloff.boxboss.fileprovider", image);
 
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-
                 startActivityForResult(intent, TAKE_PICTURE);
             }
         }
     }
 
-    private File createPictureFile() throws IOException {
+    private File createImageFile() throws IOException {
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File picture = new File(storageDir.getPath() + File.separator + timestamp + ".jpg");
+        File image = new File(storageDir.getPath() + File.separator + timestamp + ".jpg");
 
-        picturePath = picture.getAbsolutePath();
+        imagePath = image.getAbsolutePath();
 
-        return picture;
+        return image;
     }
 }
 

@@ -8,13 +8,21 @@
     android:orientation="vertical">
 
     <TextView
+        android:id="@+id/lbl_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="###" />
+
+    <TextView
         android:id="@+id/lbl_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="TextView" />
+        android:layout_toEndOf="@+id/lbl_number"
+        android:text="Name" />
 
     <TextView
         android:id="@+id/lbl_added"
@@ -33,8 +41,6 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/lbl_name"
         android:layout_toEndOf="@+id/lbl_added"
-        android:text="TextView" />
-
+        android:text="Created Date" />
 </RelativeLayout>
 
-    <!--android:background="?android:attr/selectableItemBackground"-->
