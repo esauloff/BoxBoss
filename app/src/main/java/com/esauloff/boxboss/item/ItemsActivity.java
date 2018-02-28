@@ -2,7 +2,7 @@ package com.esauloff.boxboss.item;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,13 +12,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.esauloff.boxboss.R;
-import com.esauloff.boxboss.item.ItemsViewAdapter.OnItemClickListener;
 import com.esauloff.boxboss.model.Item;
 import com.esauloff.boxboss.storage.ItemDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +37,8 @@ public class ItemsActivity extends Activity {
     private List<Item> items = new ArrayList<Item>();
     private ItemDatabase itemDatabase;
 
+    /* callbacks */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,20 +48,66 @@ public class ItemsActivity extends Activity {
         itemsView.setHasFixedSize(true);
         itemsView.setLayoutManager(new LinearLayoutManager(this));
 
-        itemsViewAdapter = new ItemsViewAdapter(items, new OnItemClickListener() {
-            @Override
-            public void onItemClick(Item item) {
-                Intent intent = new Intent(ItemsActivity.this, ItemEditorActivity.class);
-                intent.putExtra(ITEM_EXTRA, item);
-                startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
-            }
+        itemsViewAdapter = new ItemsViewAdapter(items, (Item item) -> {
+            Intent intent = new Intent(ItemsActivity.this, ItemEditorActivity.class);
+            intent.putExtra(ITEM_EXTRA, item);
+            startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
         });
         itemsView.setAdapter(itemsViewAdapter);
 
         new ItemTouchHelper(new SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                Toast.makeText(getApplicationContext(), "Left swipe", Toast.LENGTH_SHORT).show();
+                int position = viewHolder.getAdapterPosition();
+                Future<?> future = executor.submit(() -> itemDatabase.itemDao().delete( items.get(position) ));
+
+                try {
+                    future.get();
+                    ((ItemsViewAdapter)itemsViewAdapter).remove(position);
+                }
+                catch(InterruptedException | ExecutionException exc) {
+                    future.cancel(true);
+
+                    Toast.makeText(ItemsActivity.this, exc.getMessage(), Toast.LENGTH_SHORT);
+                    exc.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onChildDraw( Canvas canvas, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                    float dX, float dY, int actionState, boolean isCurrentlyActive ) {
+                if(viewHolder != null) {
+                    getDefaultUIUtil().onDraw(canvas, recyclerView, ((ItemsViewAdapter.ViewHolder) viewHolder).foreground,
+                            dX, dY, actionState, isCurrentlyActive);
+                }
+            }
+
+            @Override
+            public void onChildDrawOver( Canvas canvas, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                    float dX, float dY, int actionState, boolean isCurrentlyActive ) {
+                if(viewHolder != null) {
+                    getDefaultUIUtil().onDrawOver(canvas, recyclerView, ((ItemsViewAdapter.ViewHolder) viewHolder).foreground,
+                            dX, dY, actionState, isCurrentlyActive);
+                }
+            }
+
+            @Override
+            public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                if(viewHolder != null) {
+                    getDefaultUIUtil().onSelected( ((ItemsViewAdapter.ViewHolder)viewHolder).foreground );
+                }
+            }
+
+            @Override
+            public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                if(viewHolder != null) {
+                    getDefaultUIUtil().clearView(((ItemsViewAdapter.ViewHolder) viewHolder).foreground);
+                }
+            }
+
+            @Override
+            public int convertToAbsoluteDirection(int flags, int layoutDirection) {
+                return super.convertToAbsoluteDirection(flags, layoutDirection);
             }
 
             @Override
@@ -84,24 +130,23 @@ public class ItemsActivity extends Activity {
         }
     }
 
+    /* actions */
+
     public void openItemEditor(View view) {
         Intent intent = new Intent(this, ItemEditorActivity.class);
         startActivityForResult(intent, ITEM_EDITOR_ACTIVITY);
     }
 
+    /* private */
+
     private void updateView() {
-        Future<List<Item> > future = executor.submit(new Callable<List<Item> >() {
-            @Override
-            public List<Item> call() throws Exception {
-                return itemDatabase.itemDao().getItems();
-            }
-        });
+        Future<List<Item> > future = executor.submit(() -> itemDatabase.itemDao().getItems());
 
         try {
             items.removeAll(items);
             items.addAll(future.get(5, TimeUnit.SECONDS));
         }
-        catch(TimeoutException | ExecutionException | InterruptedException exc) {
+        catch(InterruptedException| ExecutionException | TimeoutException exc) {
             future.cancel(true);
 
             Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT);

@@ -27,8 +27,6 @@ import com.esauloff.boxboss.R;
 import com.esauloff.boxboss.model.Item;
 import com.esauloff.boxboss.storage.ItemDatabase;
 import com.flask.colorpicker.ColorPickerView;
-import com.flask.colorpicker.OnColorSelectedListener;
-import com.flask.colorpicker.builder.ColorPickerClickListener;
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder;
 
 import java.io.File;
@@ -36,7 +34,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -124,21 +121,12 @@ public class ItemEditorActivity extends Activity {
         colorPickerDialog = ColorPickerDialogBuilder.with(this).setTitle("Choose color").density(5)
                 .initialColor(color)
                 .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-                .setPositiveButton("OK", new ColorPickerClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
-                        color = selectedColor;
-                        pickColorButton.setBackgroundColor(color);
-                    }
+                .setPositiveButton("OK", (DialogInterface dialog, int selectedColor, Integer[] allColors) -> {
+                    color = selectedColor;
+                    pickColorButton.setBackgroundColor(color);
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) { }
-                })
-                .setOnColorSelectedListener(new OnColorSelectedListener() {
-                    @Override
-                    public void onColorSelected(int selectedColor) { }
-                }).build();
+                .setNegativeButton("Cancel", (DialogInterface dialog, int which) -> {})
+                .setOnColorSelectedListener((int selectedColor) -> {}).build();
 
         itemDatabase = ItemDatabase.getInstance(this);
     }
@@ -166,10 +154,6 @@ public class ItemEditorActivity extends Activity {
 
     /* actions */
 
-    public void pickColor(View view) {
-        colorPickerDialog.show();
-    }
-
     public void takeImage(View view) {
         int hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if(hasCameraPermission != PackageManager.PERMISSION_GRANTED) {
@@ -180,35 +164,36 @@ public class ItemEditorActivity extends Activity {
         }
     }
 
+    public void pickColor(View view) {
+        colorPickerDialog.show();
+    }
+
     public void save(View view) {
         item.setName(nameEdit.getText().toString());
         item.setComment(commentEdit.getText().toString());
         item.setImagePath(imagePath);
         item.setColor(color);
 
-        Future<Integer> future = executor.submit(new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                int id = 0;
+        Future<Integer> future = executor.submit(() -> {
+            int id = 0;
 
-                if(item.getId() != 0) {
-                    item.setLastModifiedDate(new Date());
-                    if(itemDatabase.itemDao().update(item) == 1) {
-                        id = item.getId();
-                    }
-                    else {
-                        throw new Exception("An error occurred while updating item in database");
-                    }
+            if(item.getId() != 0) {
+                item.setLastModifiedDate(new Date());
+                if(itemDatabase.itemDao().update(item) == 1) {
+                    id = item.getId();
                 }
                 else {
-                    id = (int)itemDatabase.itemDao().insert(item);
-                    if(id == -1) {
-                        throw new Exception("An error occurred while inserting item into database");
-                    }
+                    throw new Exception("An error occurred while updating item in database");
                 }
-
-                return id;
             }
+            else {
+                id = (int)itemDatabase.itemDao().insert(item);
+                if(id == -1) {
+                    throw new Exception("An error occurred while inserting item into database");
+                }
+            }
+
+            return id;
         });
 
         int id = 0;

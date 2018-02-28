@@ -19,7 +19,7 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public RelativeLayout layout;
+        public RelativeLayout foreground;
         public TextView numberLabel;
         public TextView nameLabel;
         public TextView createdDateLabel;
@@ -27,24 +27,19 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
         public ViewHolder(View view) {
             super(view);
 
-            this.layout = view.findViewById(R.id.item);
+            this.foreground = view.findViewById(R.id.item_foreground);
             this.numberLabel = view.findViewById(R.id.lbl_number);
             this.nameLabel = view.findViewById(R.id.lbl_name);
             this.createdDateLabel = view.findViewById(R.id.lbl_createdDate);
         }
 
         public void bind(final int position, final Item item, final OnItemClickListener listener) {
-            layout.setBackgroundColor(item.getColor());
-            numberLabel.setText(Integer.toString(position + 1) + ".");
+            foreground.setBackgroundColor(item.getColor());
+            numberLabel.setText(Integer.toString(position + 1) + ". ");
             nameLabel.setText(item.getName());
             createdDateLabel.setText(item.getCreatedDate().toString());
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    listener.onItemClick(item);
-                }
-            });
+            itemView.setOnClickListener((View view) -> listener.onItemClick(item));
         }
     }
 
@@ -72,6 +67,11 @@ public class ItemsViewAdapter extends RecyclerView.Adapter<ItemsViewAdapter.View
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    public void remove(int position) {
+        items.remove(position);
+        notifyItemRemoved(position);
     }
 }
 

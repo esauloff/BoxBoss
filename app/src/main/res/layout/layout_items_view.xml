@@ -1,46 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/item"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="true"
-    android:focusable="true"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/lbl_number"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:text="###" />
+    <RelativeLayout
+        android:id="@+id/item_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorAccent">
 
-    <TextView
-        android:id="@+id/lbl_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/lbl_number"
-        android:text="Name" />
+        <TextView
+            android:id="@+id/lbl_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="DELETE" />
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/lbl_added"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/item_foreground"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/lbl_createdDate"
-        android:layout_alignBottom="@+id/lbl_createdDate"
-        android:layout_alignParentStart="true"
-        android:text="Added:"
-        android:textStyle="bold" />
+        android:background="@android:color/white"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/lbl_createdDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/lbl_name"
-        android:layout_toEndOf="@+id/lbl_added"
-        android:text="Created Date" />
-</RelativeLayout>
+        <TextView
+            android:id="@+id/lbl_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:text="###" />
+
+        <TextView
+            android:id="@+id/lbl_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/lbl_number"
+            android:text="Name" />
+
+        <TextView
+            android:id="@+id/lbl_added"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/lbl_createdDate"
+            android:layout_alignBottom="@+id/lbl_createdDate"
+            android:layout_alignParentStart="true"
+            android:text="Added:"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/lbl_createdDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/lbl_name"
+            android:layout_toEndOf="@+id/lbl_added"
+            android:text="Created Date" />
+    </RelativeLayout>
+
+</FrameLayout>
 
